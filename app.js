@@ -2,8 +2,8 @@
 //  STEP 1: Paste your Supabase credentials here
 //  (you'll get these from supabase.com — see README)
 // ─────────────────────────────────────────────
-const SUPABASE_URL  = 'PASTE_YOUR_SUPABASE_URL_HERE';
-const SUPABASE_ANON = 'PASTE_YOUR_SUPABASE_ANON_KEY_HERE';
+const SUPABASE_URL  = 'https://tpxlduvtocvasxqpmqom.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRweGxkdXZ0b2N2YXN4cXBtcW9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MTE5OTAsImV4cCI6MjA4OTI4Nzk5MH0.bKtk8DiPI5RVX-DYirjSkicjzELiryHsp9v6Hyi17KM';
 
 // ─────────────────────────────────────────────
 //  Setup — don't touch this part
