@@ -178,8 +178,24 @@
   <div id="section-leaderboard" class="dash-body" style="display:none">
     <div class="section-header">
       <h1 class="section-title">Leaderboard</h1>
-      <p class="section-sub">The richest players in the kingdom.</p>
+      <p class="section-sub">Tournament standings and overall gold rankings.</p>
     </div>
+
+    <!-- Active tournament standings -->
+    <div id="lb-tournament-block" style="display:none;margin-bottom:2rem">
+      <h2 class="lb-section-label">&#x2694; Current Tournament</h2>
+      <div class="league-table-wrap">
+        <table class="league-table">
+          <thead>
+            <tr><th>#</th><th>Player</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr>
+          </thead>
+          <tbody id="lb-tournament-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Global gold rankings -->
+    <h2 class="lb-section-label">&#x1FA99; Gold Rankings</h2>
     <div class="leaderboard-table">
       <div class="lb-header">
         <span>#</span><span>Player</span><span>Wins</span><span>Gold</span>
