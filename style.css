@@ -504,3 +504,122 @@ body {
   .tournament-header { flex-direction: column; }
   .lb-header, .lb-row { grid-template-columns: 40px 1fr 70px 90px; }
 }
+
+/* ── SIDE BUTTONS (bet modal) ── */
+.side-btn {
+  flex: 1; padding: .75rem; border-radius: var(--radius-sm);
+  border: 2px solid var(--border); background: var(--dark3);
+  color: var(--text); cursor: pointer; font-family: var(--font-body);
+  font-size: .9rem; font-weight: 700; text-align: center;
+  transition: var(--transition); line-height: 1.4;
+}
+.side-btn:hover { border-color: var(--border-bright); color: var(--gold); }
+.side-btn.selected { border-color: var(--gold); background: var(--gold-glow); color: var(--gold); }
+
+/* ── ROUND STATE BADGES ── */
+.round-state-badge {
+  display: inline-flex; align-items: center;
+  padding: .2rem .65rem; border-radius: 100px;
+  font-size: .75rem; font-weight: 700; letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.state-open    { background: rgba(136,128,160,0.15); color: var(--text-dim); border: 1px solid rgba(136,128,160,0.3); }
+.state-displayed{ background: rgba(80,208,144,0.12); color: var(--green);   border: 1px solid rgba(80,208,144,0.35); }
+.state-locked  { background: rgba(224,80,80,0.12);   color: var(--red);     border: 1px solid rgba(224,80,80,0.35); }
+.state-ended   { background: rgba(240,192,64,0.12);  color: var(--gold);    border: 1px solid rgba(240,192,64,0.35); }
+
+/* ── LEAGUE SECTION LEGEND ── */
+.league-legend {
+  display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+  margin-bottom: 1.75rem; font-size: .82rem; color: var(--text-dim);
+}
+
+/* ── LEAGUE ROUND BLOCKS ── */
+.league-round-block {
+  background: var(--dark2); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 1.25rem;
+  overflow: hidden; transition: border-color var(--transition);
+}
+.league-round-block.league-round-current {
+  border-color: var(--border-bright);
+  box-shadow: 0 0 20px rgba(240,192,64,0.06);
+}
+
+.league-round-header {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: .75rem;
+  padding: 1rem 1.25rem;
+  background: var(--dark3); border-bottom: 1px solid var(--border);
+}
+.league-round-title-row {
+  display: flex; align-items: center; gap: .75rem;
+}
+.league-round-num {
+  font-family: var(--font-display); font-size: 1rem; font-weight: 700;
+  color: var(--text); letter-spacing: .5px;
+}
+.league-round-controls {
+  display: flex; align-items: center; gap: .5rem;
+}
+.round-done-label {
+  font-size: .82rem; color: var(--green); font-weight: 600;
+}
+
+/* ── ROUND ACTION BUTTONS ── */
+.btn-round-action {
+  padding: .45rem 1rem; border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: .85rem; font-weight: 700;
+  cursor: pointer; letter-spacing: .5px; transition: var(--transition);
+  border: 1px solid;
+}
+.btn-display {
+  background: rgba(80,144,224,0.12); color: var(--blue);
+  border-color: rgba(80,144,224,0.35);
+}
+.btn-display:hover { background: rgba(80,144,224,0.22); }
+.btn-lock {
+  background: rgba(224,80,80,0.12); color: var(--red);
+  border-color: rgba(224,80,80,0.35);
+}
+.btn-lock:hover { background: rgba(224,80,80,0.22); }
+.btn-end-round {
+  background: rgba(80,208,144,0.12); color: var(--green);
+  border-color: rgba(80,208,144,0.35);
+}
+.btn-end-round:hover { background: rgba(80,208,144,0.22); }
+
+/* ── LEAGUE FIXTURE ROWS ── */
+.league-fixtures-list {
+  display: flex; flex-direction: column;
+}
+.league-fixture-row {
+  display: grid; grid-template-columns: 1fr 40px 1fr auto;
+  align-items: center; gap: .75rem;
+  padding: .75rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  transition: background var(--transition);
+}
+.league-fixture-row:last-child { border-bottom: none; }
+.league-fixture-row:hover { background: var(--dark3); }
+.league-fixture-row.lf-pending { opacity: .75; }
+.league-fixture-row.played { }
+
+.lf-player { font-weight: 700; font-size: .95rem; }
+.lf-vs { text-align: center; font-size: .72rem; color: var(--text-dim); letter-spacing: 1.5px; font-weight: 600; }
+.lf-result { font-size: .85rem; font-weight: 700; color: var(--gold); text-align: right; }
+.lf-awaiting { font-size: .8rem; color: var(--text-dim); text-align: right; }
+
+/* ── SIDE BUTTONS (bet modal) ── */
+.side-btn {
+  flex: 1; padding: .75rem; border-radius: var(--radius-sm);
+  border: 2px solid var(--border); background: var(--dark3);
+  color: var(--text); cursor: pointer; font-family: var(--font-body);
+  font-size: .88rem; font-weight: 700; text-align: center;
+  transition: var(--transition); line-height: 1.4;
+}
+.side-btn:hover { border-color: var(--border-bright); color: var(--gold); }
+.side-btn.selected { border-color: var(--gold); background: var(--gold-glow); color: var(--gold); }
+
+/* ── NAV LEAGUE LINK ACCENT ── */
+.nav-link-league { color: var(--gold) !important; }
+.nav-link-league:hover, .nav-link-league.active { background: rgba(240,192,64,0.15) !important; }
