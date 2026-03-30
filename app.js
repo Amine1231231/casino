@@ -74,7 +74,7 @@ function showDashboard(){
   updateNavForUser();
   showSection('home');
   loadMyBets();
-  renderArena('table'); // default to table on first load
+  renderArena();
 }
 
 function updateBalance(){document.getElementById('nav-balance').textContent=currentUser.balance.toLocaleString();}
@@ -133,7 +133,7 @@ function startPolling(){
 }
 
 // ── ARENA (home section) ──
-function renderArena(forceTab){
+function renderArena(){
   updateNavForUser();
   const empty=document.getElementById('arena-empty');
   const active=document.getElementById('arena-tournament');
@@ -147,24 +147,11 @@ function renderArena(forceTab){
   const state=tournament.roundStates?.[ri]||'open';
   const stateLabel={open:'No Round Active',displayed:'Betting Open',locked:'Bets Locked',ended:'Round Complete'}[state]||state;
   document.getElementById('tournament-round-display').textContent=`Round ${ri+1} of ${totalRounds} · ${stateLabel}`;
-  // Only switch to table tab on explicit request or first load; don't override the fixtures tab
-  if(forceTab) showTab(forceTab);
+  renderArenaFixtures();
 }
 
-function showTab(tab){
-  ['table','fixtures'].forEach(t=>{
-    const el=document.getElementById(`tab-${t}`);
-    if(el) el.style.display=t===tab?'block':'none';
-  });
-  if(tab==='table') renderLeagueTable();
-  if(tab==='fixtures') renderArenaFixtures();
-}
-
-// Also re-render whichever tab is currently visible (called after state changes)
 function refreshActiveArenaTab(){
-  const fixturesEl=document.getElementById('tab-fixtures');
-  if(fixturesEl&&fixturesEl.style.display!=='none') renderArenaFixtures();
-  else renderLeagueTable();
+  renderArenaFixtures();
 }
 
 function renderLeagueTable(){
@@ -498,11 +485,45 @@ async function loadMyBets(){
   currentBets=data||[];renderMyBets();
 }
 
+function isBetCancellable(bet){
+  // Can only cancel pending bets while the round's betting is still open
+  if(bet.status!=='pending') return false;
+  if(!tournament) return false;
+  const ri=bet.round_index;
+  if(ri==null) return false;
+  const state=tournament.roundStates?.[ri]||'open';
+  return state==='open'||state==='displayed';
+}
+
 function renderMyBets(){
   const el=document.getElementById('bets-list');
   el.innerHTML=currentBets.length
-    ?currentBets.map(b=>`<div class="bet-card"><div class="bet-card-info"><div class="bet-card-match">${b.match_name}</div><div class="bet-card-pick">Picked: <strong>${b.picked}</strong> · ${b.odds}x · Win: 🪙 ${b.potential_win.toLocaleString()}</div></div><div class="bet-card-meta"><div class="bet-card-amount">🪙 ${b.amount.toLocaleString()}</div><div class="bet-card-status status-${b.status}">${b.status}</div></div></div>`).join('')
+    ?currentBets.map(b=>{
+      const cancellable=isBetCancellable(b);
+      return `<div class="bet-card">
+        <div class="bet-card-info">
+          <div class="bet-card-match">${b.match_name}</div>
+          <div class="bet-card-pick">Picked: <strong>${b.picked}</strong> · ${b.odds}x · Win: 🪙 ${b.potential_win.toLocaleString()}</div>
+        </div>
+        <div class="bet-card-meta">
+          <div class="bet-card-amount">🪙 ${b.amount.toLocaleString()}</div>
+          <div class="bet-card-status status-${b.status}">${b.status}</div>
+          ${cancellable?`<button class="btn-cancel-bet" onclick="cancelBet('${b.id}',${b.amount})">✕ Cancel</button>`:''}
+        </div>
+      </div>`;
+    }).join('')
     :'<div class="empty-state">⚔ No bets placed yet. Head to the Arena!</div>';
+}
+
+async function cancelBet(betId, amount){
+  if(!confirm('Cancel this bet and get your gold refunded?')) return;
+  const{error}=await db.from('bets').delete().eq('id',betId).eq('player_id',currentUser.id).eq('status','pending');
+  if(error){alert('Could not cancel bet. It may already be locked.');return;}
+  // Refund the gold
+  currentUser.balance+=amount;
+  await db.from('players').update({balance:currentUser.balance}).eq('id',currentUser.id);
+  updateBalance();
+  await loadMyBets();
 }
 
 // ── LEADERBOARD ──
