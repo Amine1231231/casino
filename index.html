@@ -92,9 +92,10 @@
   <nav class="navbar">
     <div class="nav-logo">♛ Royal<span>Bet</span></div>
     <div class="nav-links">
-      <a class="nav-link active" onclick="showSection('home')">🏟 Arena</a>
-      <a class="nav-link" onclick="showSection('bets')">⚔ My Bets</a>
-      <a class="nav-link" onclick="showSection('leaderboard')">👑 Leaderboard</a>
+      <a class="nav-link active" data-section="home" onclick="showSection('home')">🏟 Arena</a>
+      <a class="nav-link" data-section="bets" onclick="showSection('bets')">⚔ My Bets</a>
+      <a class="nav-link" data-section="leaderboard" onclick="showSection('leaderboard')">👑 Leaderboard</a>
+      <a class="nav-link nav-link-league" id="nav-league-link" data-section="league" onclick="showSection('league')" style="display:none">⚙ League</a>
     </div>
     <div class="nav-right">
       <div class="gold-balance">
@@ -131,7 +132,7 @@
         <div class="tournament-header-actions">
           <button class="btn-secondary" onclick="showTab('table')">📊 League Table</button>
           <button class="btn-secondary" onclick="showTab('fixtures')">📅 Fixtures</button>
-          <button class="btn-danger" onclick="endTournament()">End Tournament</button>
+          <button class="btn-danger" id="arena-end-btn" onclick="endTournament()">End Tournament</button>
         </div>
       </div>
 
@@ -186,6 +187,27 @@
       <div id="lb-rows"></div>
     </div>
   </div>
+
+  <!-- LEAGUE SECTION (creator only) -->
+  <div id="section-league" class="dash-body" style="display:none">
+    <div class="section-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+      <div>
+        <h1 class="section-title">⚙ League Control</h1>
+        <p class="section-sub">Manage rounds — display fixtures, lock bets, record results.</p>
+      </div>
+    </div>
+
+    <!-- Round state legend -->
+    <div class="league-legend">
+      <span class="round-state-badge state-open">Not Displayed</span> →
+      <span class="round-state-badge state-displayed">📺 Display</span> →
+      <span class="round-state-badge state-locked">🔒 Lock</span> →
+      <span class="round-state-badge state-ended">✅ End Round</span>
+    </div>
+
+    <div id="league-rounds-container"></div>
+  </div>
+
 </div>
 
 <!-- ══════════════════════════════════
@@ -292,7 +314,7 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="app.js"></script>
 </body>
 </html>
