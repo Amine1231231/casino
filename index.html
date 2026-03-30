@@ -26,7 +26,6 @@
     </div>
 
     <div class="auth-card">
-      <!-- TABS -->
       <div class="auth-tabs">
         <button class="tab active" id="tab-signin" onclick="switchTab('signin')">Sign In</button>
         <button class="tab" id="tab-signup" onclick="switchTab('signup')">Create Account</button>
@@ -36,7 +35,6 @@
       <div id="signin-form">
         <div class="error-msg" id="signin-error"></div>
         <div class="success-msg" id="signin-success"></div>
-
         <div class="field">
           <label for="signin-username">Username</label>
           <div class="input-wrap">
@@ -52,17 +50,13 @@
             <button class="eye-btn" onclick="togglePw('signin-password', this)" tabindex="-1">👁</button>
           </div>
         </div>
-
-        <button class="btn-primary" id="signin-btn" onclick="signIn()">
-          <span>Enter the Arena</span>
-        </button>
+        <button class="btn-primary" id="signin-btn" onclick="signIn()"><span>Enter the Arena</span></button>
       </div>
 
       <!-- SIGN UP -->
       <div id="signup-form" style="display:none">
         <div class="error-msg" id="signup-error"></div>
         <div class="success-msg" id="signup-success"></div>
-
         <div class="field">
           <label for="signup-username">Choose a Username</label>
           <div class="input-wrap">
@@ -86,10 +80,7 @@
             <input type="password" id="signup-confirm" placeholder="Repeat password" autocomplete="new-password"/>
           </div>
         </div>
-
-        <button class="btn-primary" id="signup-btn" onclick="signUp()">
-          <span>Join the Arena</span>
-        </button>
+        <button class="btn-primary" id="signup-btn" onclick="signUp()"><span>Join the Arena</span></button>
       </div>
     </div>
   </div>
@@ -118,15 +109,56 @@
     </div>
   </nav>
 
-  <!-- HOME SECTION -->
+  <!-- HOME / ARENA SECTION -->
   <div id="section-home" class="dash-body">
-    <div class="section-header">
-      <h1 class="section-title">Live Matches</h1>
-      <p class="section-sub">Pick your champion. Place your gold. Glory awaits.</p>
+    <!-- Empty arena state -->
+    <div id="arena-empty" class="arena-empty">
+      <div class="arena-empty-icon">⚔</div>
+      <h2 class="arena-empty-title">The Arena Awaits</h2>
+      <p class="arena-empty-sub">No tournament is running. Create one to start the battle.</p>
+      <button class="btn-create-tournament" onclick="openCreateTournament()">
+        <span class="btn-icon">+</span> Create Tournament
+      </button>
     </div>
 
-    <div class="matches-grid" id="matches-grid">
-      <!-- filled by JS -->
+    <!-- Active tournament view -->
+    <div id="arena-tournament" style="display:none">
+      <div class="tournament-header">
+        <div>
+          <h1 class="section-title" id="tournament-name-display">Tournament</h1>
+          <p class="section-sub" id="tournament-round-display">Round 1 of N</p>
+        </div>
+        <div class="tournament-header-actions">
+          <button class="btn-secondary" onclick="showTab('table')">📊 League Table</button>
+          <button class="btn-secondary" onclick="showTab('fixtures')">📅 Fixtures</button>
+          <button class="btn-danger" onclick="endTournament()">End Tournament</button>
+        </div>
+      </div>
+
+      <!-- League Table Tab -->
+      <div id="tab-table" class="tournament-tab">
+        <div class="league-table-wrap">
+          <table class="league-table" id="league-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Player</th>
+                <th>P</th>
+                <th>W</th>
+                <th>D</th>
+                <th>L</th>
+                <th>Pts</th>
+              </tr>
+            </thead>
+            <tbody id="league-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Fixtures Tab -->
+      <div id="tab-fixtures" class="tournament-tab" style="display:none">
+        <div id="fixtures-container"></div>
+      </div>
     </div>
   </div>
 
@@ -151,10 +183,81 @@
       <div class="lb-header">
         <span>#</span><span>Player</span><span>Wins</span><span>Gold</span>
       </div>
-      <div id="lb-rows"><!-- filled by JS --></div>
+      <div id="lb-rows"></div>
     </div>
   </div>
+</div>
 
+<!-- ══════════════════════════════════
+     CREATE TOURNAMENT MODAL
+══════════════════════════════════ -->
+<div id="create-tournament-modal" class="modal-overlay" style="display:none" onclick="closeCreateModal(event)">
+  <div class="modal-card modal-large">
+    <div class="modal-title">⚔ Create Tournament</div>
+
+    <!-- Step 1: Name -->
+    <div id="ct-step-1" class="ct-step">
+      <div class="field">
+        <label>Tournament Name</label>
+        <div class="input-wrap">
+          <span class="input-icon">🏆</span>
+          <input type="text" id="ct-name" placeholder="e.g. Royal Clash Cup #1" maxlength="40"/>
+        </div>
+      </div>
+      <div class="ct-step-actions">
+        <button class="btn-secondary" onclick="closeCreateModal()">Cancel</button>
+        <button class="btn-primary small" onclick="ctNextStep(2)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Add Players -->
+    <div id="ct-step-2" class="ct-step" style="display:none">
+      <div class="ct-player-panels">
+        <!-- Registered users -->
+        <div class="ct-panel">
+          <div class="ct-panel-title">👥 Registered Players</div>
+          <div class="ct-panel-sub">Click to add to tournament</div>
+          <div id="ct-registered-list" class="ct-player-list">
+            <!-- filled by JS -->
+          </div>
+        </div>
+
+        <!-- New/guest players -->
+        <div class="ct-panel">
+          <div class="ct-panel-title">➕ Add New Player</div>
+          <div class="ct-panel-sub">For players without an account</div>
+          <div class="field" style="margin-top:.75rem">
+            <div class="input-wrap">
+              <span class="input-icon">⚔</span>
+              <input type="text" id="ct-new-name" placeholder="Player name" maxlength="20"/>
+            </div>
+          </div>
+          <div class="field">
+            <div class="input-wrap">
+              <span class="input-icon">#</span>
+              <input type="text" id="ct-new-cr-id" placeholder="CR Tag (e.g. #ABC123)" maxlength="12"/>
+            </div>
+          </div>
+          <button class="btn-secondary" style="width:100%" onclick="ctAddNewPlayer()">Add Player</button>
+        </div>
+      </div>
+
+      <!-- Selected players -->
+      <div class="ct-selected-header">
+        <span>Selected Players (<span id="ct-selected-count">0</span>)</span>
+        <span class="ct-min-hint">Minimum 2</span>
+      </div>
+      <div id="ct-selected-list" class="ct-selected-list">
+        <div class="ct-empty-selected">No players added yet</div>
+      </div>
+
+      <div class="error-msg" id="ct-error"></div>
+      <div class="ct-step-actions">
+        <button class="btn-secondary" onclick="ctNextStep(1)">← Back</button>
+        <button class="btn-primary small" onclick="ctGenerateTournament()">Generate League ⚔</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- BET MODAL -->
@@ -175,7 +278,20 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- MATCH RESULT MODAL -->
+<div id="result-modal" class="modal-overlay" style="display:none" onclick="closeResultModal(event)">
+  <div class="modal-card">
+    <div class="modal-title">🏆 Record Result</div>
+    <div class="modal-match" id="result-match-info"></div>
+    <div class="result-options" id="result-options">
+      <!-- filled by JS -->
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeResultModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script src="app.js"></script>
 </body>
 </html>
