@@ -486,7 +486,6 @@ async function loadMyBets(){
 }
 
 function isBetCancellable(bet){
-  // Can only cancel pending bets while the round's betting is still open
   if(bet.status!=='pending') return false;
   if(!tournament) return false;
   const ri=bet.round_index;
@@ -517,9 +516,17 @@ function renderMyBets(){
 
 async function cancelBet(betId, amount){
   if(!confirm('Cancel this bet and get your gold refunded?')) return;
-  const{error}=await db.from('bets').delete().eq('id',betId).eq('player_id',currentUser.id).eq('status','pending');
-  if(error){alert('Could not cancel bet. It may already be locked.');return;}
-  // Refund the gold
+  // Use update instead of delete — avoids needing a DELETE RLS policy on bets
+  const{error}=await db.from('bets')
+    .update({status:'cancelled'})
+    .eq('id',betId)
+    .eq('player_id',currentUser.id)
+    .eq('status','pending');
+  if(error){
+    console.error('Cancel bet error:',error);
+    alert('Could not cancel bet: '+error.message);
+    return;
+  }
   currentUser.balance+=amount;
   await db.from('players').update({balance:currentUser.balance}).eq('id',currentUser.id);
   updateBalance();
