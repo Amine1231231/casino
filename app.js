@@ -497,7 +497,7 @@ function isBetCancellable(bet){
 function renderMyBets(){
   const el=document.getElementById('bets-list');
   el.innerHTML=currentBets.length
-    ?currentBets.map(b=>{
+    ?currentBets.map((b,idx)=>{
       const cancellable=isBetCancellable(b);
       return `<div class="bet-card">
         <div class="bet-card-info">
@@ -507,19 +507,21 @@ function renderMyBets(){
         <div class="bet-card-meta">
           <div class="bet-card-amount">🪙 ${b.amount.toLocaleString()}</div>
           <div class="bet-card-status status-${b.status}">${b.status}</div>
-          ${cancellable?`<button class="btn-cancel-bet" onclick="cancelBet('${b.id}',${b.amount})">✕ Cancel</button>`:''}
+          ${cancellable?`<button class="btn-cancel-bet" onclick="cancelBet(${idx})">✕ Cancel</button>`:''}
         </div>
       </div>`;
     }).join('')
     :'<div class="empty-state">⚔ No bets placed yet. Head to the Arena!</div>';
 }
 
-async function cancelBet(betId, amount){
+async function cancelBet(idx){
+  const bet=currentBets[idx];
+  if(!bet){alert('Bet not found.');return;}
   if(!confirm('Cancel this bet and get your gold refunded?')) return;
-  // Use update instead of delete — avoids needing a DELETE RLS policy on bets
+  console.log('Cancelling bet id:',bet.id,'type:',typeof bet.id);
   const{error}=await db.from('bets')
     .update({status:'cancelled'})
-    .eq('id',betId)
+    .eq('id',bet.id)
     .eq('player_id',currentUser.id)
     .eq('status','pending');
   if(error){
@@ -527,7 +529,7 @@ async function cancelBet(betId, amount){
     alert('Could not cancel bet: '+error.message);
     return;
   }
-  currentUser.balance+=amount;
+  currentUser.balance+=bet.amount;
   await db.from('players').update({balance:currentUser.balance}).eq('id',currentUser.id);
   updateBalance();
   await loadMyBets();
