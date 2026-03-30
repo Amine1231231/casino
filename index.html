@@ -130,34 +130,12 @@
           <p class="section-sub" id="tournament-round-display">Round 1 of N</p>
         </div>
         <div class="tournament-header-actions">
-          <button class="btn-secondary" onclick="showTab('table')">📊 League Table</button>
-          <button class="btn-secondary" onclick="showTab('fixtures')">📅 Fixtures</button>
           <button class="btn-danger" id="arena-end-btn" onclick="endTournament()">End Tournament</button>
         </div>
       </div>
 
-      <!-- League Table Tab -->
-      <div id="tab-table" class="tournament-tab">
-        <div class="league-table-wrap">
-          <table class="league-table" id="league-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Player</th>
-                <th>P</th>
-                <th>W</th>
-                <th>D</th>
-                <th>L</th>
-                <th>Pts</th>
-              </tr>
-            </thead>
-            <tbody id="league-table-body"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Fixtures Tab -->
-      <div id="tab-fixtures" class="tournament-tab" style="display:none">
+      <!-- Fixtures only -->
+      <div id="tab-fixtures" class="tournament-tab">
         <div id="fixtures-container"></div>
       </div>
     </div>
