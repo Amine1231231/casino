@@ -509,6 +509,25 @@ function renderMyBets(){
 async function renderLeaderboard(){
   const el=document.getElementById('lb-rows');
   if(!el) return;
+
+  // ── Tournament standings block ──
+  const tournamentBlock=document.getElementById('lb-tournament-block');
+  const tournamentTable=document.getElementById('lb-tournament-table-body');
+  if(tournament&&tournamentTable){
+    tournamentBlock.style.display='block';
+    const sorted=[...tournament.table].sort((a,b)=>b.pts-a.pts||b.w-a.w||(b.w-b.l)-(a.w-a.l));
+    tournamentTable.innerHTML=sorted.map((p,i)=>`
+      <tr class="rank-${i+1}">
+        <td><span class="rank-num">${i+1}</span></td>
+        <td><div class="player-name-cell">${p.name}</div>${p.crTag?`<div class="player-cr-tag">${p.crTag}</div>`:''}</td>
+        <td>${p.p}</td><td>${p.w}</td><td>${p.d}</td><td>${p.l}</td>
+        <td><span class="pts-cell">${p.pts}</span></td>
+      </tr>`).join('');
+  } else if(tournamentBlock){
+    tournamentBlock.style.display='none';
+  }
+
+  // ── Global gold rankings ──
   const{data:players,error}=await db.from('players').select('username,wins,balance').order('balance',{ascending:false}).limit(50);
   if(error||!players||!players.length){
     el.innerHTML='<div class="empty-state" style="padding:2rem">No players yet.</div>';return;
