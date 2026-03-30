@@ -642,3 +642,5 @@ body {
   cursor: pointer; transition: var(--transition); display: block; width: 100%;
 }
 .btn-cancel-bet:hover { background: rgba(224,80,80,0.22); }
+
+.status-cancelled { color: var(--text-dim); text-decoration: line-through; }
