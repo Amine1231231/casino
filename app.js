@@ -6,20 +6,13 @@ let registeredPlayers=[],ctSelectedPlayers=[];
 let tournament=null;
 let pollInterval=null;
 
-const LEADERBOARD=[
-  {username:'KingSlayer99',wins:47,balance:24800},{username:'DragonRider',wins:39,balance:19200},
-  {username:'RocketQueen',wins:35,balance:15600},{username:'MegaKnight',wins:31,balance:12400},
-  {username:'IceWizard',wins:28,balance:10900},{username:'GoblinKing',wins:22,balance:8700},
-  {username:'SparkMaster',wins:19,balance:7200},{username:'WallBreaker',wins:14,balance:5500},
-];
-
 const ALL_SECTIONS=['home','bets','leaderboard','league'];
 
 window.addEventListener('DOMContentLoaded',async()=>{
+  // Load tournament FIRST so it's ready before showDashboard renders the arena
+  await loadTournamentFromSupabase();
   const{data:{session}}=await db.auth.getSession();
   if(session) await loadUserProfile(session.user.id);
-  renderLeaderboard();
-  await loadTournamentFromSupabase();
   startPolling();
 });
 
@@ -81,7 +74,7 @@ function showDashboard(){
   updateNavForUser();
   showSection('home');
   loadMyBets();
-  renderArena();
+  renderArena('table'); // default to table on first load
 }
 
 function updateBalance(){document.getElementById('nav-balance').textContent=currentUser.balance.toLocaleString();}
@@ -101,6 +94,7 @@ function showSection(name){
     el.classList.toggle('active',el.dataset.section===name);
   });
   if(name==='league') renderLeague();
+  if(name==='leaderboard') renderLeaderboard();
 }
 
 // ── SUPABASE TOURNAMENT SYNC ──
@@ -130,12 +124,16 @@ function startPolling(){
     const prevStates=tournament?JSON.stringify(tournament.roundStates)+tournament.currentRound:'null';
     await loadTournamentFromSupabase();
     const nextStates=tournament?JSON.stringify(tournament.roundStates)+tournament.currentRound:'null';
-    if(prevStates!==nextStates){renderArena();updateNavForUser();}
+    if(prevStates!==nextStates){
+      renderArena();
+      refreshActiveArenaTab();
+      updateNavForUser();
+    }
   },5000);
 }
 
 // ── ARENA (home section) ──
-function renderArena(){
+function renderArena(forceTab){
   updateNavForUser();
   const empty=document.getElementById('arena-empty');
   const active=document.getElementById('arena-tournament');
@@ -149,7 +147,8 @@ function renderArena(){
   const state=tournament.roundStates?.[ri]||'open';
   const stateLabel={open:'No Round Active',displayed:'Betting Open',locked:'Bets Locked',ended:'Round Complete'}[state]||state;
   document.getElementById('tournament-round-display').textContent=`Round ${ri+1} of ${totalRounds} · ${stateLabel}`;
-  showTab('table');
+  // Only switch to table tab on explicit request or first load; don't override the fixtures tab
+  if(forceTab) showTab(forceTab);
 }
 
 function showTab(tab){
@@ -159,6 +158,13 @@ function showTab(tab){
   });
   if(tab==='table') renderLeagueTable();
   if(tab==='fixtures') renderArenaFixtures();
+}
+
+// Also re-render whichever tab is currently visible (called after state changes)
+function refreshActiveArenaTab(){
+  const fixturesEl=document.getElementById('tab-fixtures');
+  if(fixturesEl&&fixturesEl.style.display!=='none') renderArenaFixtures();
+  else renderLeagueTable();
 }
 
 function renderLeagueTable(){
@@ -260,21 +266,21 @@ async function roundDisplay(ri){
   tournament.roundStates[ri]='displayed';
   tournament.currentRound=ri;
   await saveTournamentToSupabase();
-  renderLeague();renderArena();
+  renderLeague();renderArena();refreshActiveArenaTab();
 }
 
 async function roundLock(ri){
   if(!isCreator()) return;
   tournament.roundStates[ri]='locked';
   await saveTournamentToSupabase();
-  renderLeague();renderArena();
+  renderLeague();renderArena();refreshActiveArenaTab();
 }
 
 async function roundEnd(ri){
   if(!isCreator()) return;
   tournament.roundStates[ri]='ended';
   await saveTournamentToSupabase();
-  renderLeague();renderArena();
+  renderLeague();renderArena();refreshActiveArenaTab();
 }
 
 // ── CREATE TOURNAMENT MODAL ──
@@ -286,7 +292,9 @@ async function openCreateTournament(){
   document.getElementById('ct-new-cr-id').value='';
   const errEl=document.getElementById('ct-error');
   if(errEl) errEl.style.display='none';
-  const{data}=await db.from('players').select('id,username').order('username');
+  // Fetch ALL players with no row limit — Supabase default page size is 1000
+  const{data,error}=await db.from('players').select('id,username').order('username').limit(1000);
+  if(error) console.warn('Could not fetch players:', error.message);
   registeredPlayers=data||[];
   renderCTRegistered();renderCTSelected();
   ctNextStep(1);
@@ -415,7 +423,7 @@ async function recordResult(winner){
   await saveTournamentToSupabase();
   await settleBetsForFixture(ri,fi,winner);
   document.getElementById('result-modal').style.display='none';
-  renderLeague();renderArena();
+  renderLeague();renderArena();refreshActiveArenaTab();
 }
 
 // ── BET MODAL ──
@@ -498,17 +506,23 @@ function renderMyBets(){
 }
 
 // ── LEADERBOARD ──
-function renderLeaderboard(){
+async function renderLeaderboard(){
+  const el=document.getElementById('lb-rows');
+  if(!el) return;
+  const{data:players,error}=await db.from('players').select('username,wins,balance').order('balance',{ascending:false}).limit(50);
+  if(error||!players||!players.length){
+    el.innerHTML='<div class="empty-state" style="padding:2rem">No players yet.</div>';return;
+  }
   const rc=['gold','silver','bronze'],re=['♛','♜','♝'];
-  document.getElementById('lb-rows').innerHTML=LEADERBOARD.map((p,i)=>`
+  el.innerHTML=players.map((p,i)=>`
     <div class="lb-row">
       <span class="lb-rank ${rc[i]||''}">${re[i]||i+1}</span>
       <div class="lb-player" style="display:flex;align-items:center;gap:.6rem">
         <div class="nav-avatar" style="width:28px;height:28px;font-size:.75rem">${p.username.slice(0,2).toUpperCase()}</div>
         <span class="lb-name">${p.username}</span>
       </div>
-      <span class="lb-wins">${p.wins}W</span>
-      <span class="lb-gold">${p.balance.toLocaleString()}</span>
+      <span class="lb-wins">${p.wins||0}W</span>
+      <span class="lb-gold">${(p.balance||0).toLocaleString()}</span>
     </div>`).join('');
 }
 
